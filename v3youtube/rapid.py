@@ -1,9 +1,8 @@
 import os
-import shutil
 from time import sleep
-
+import random
+import string
 from login_gmail_selenium.util.profile import ChromeProfile
-from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.support.wait import WebDriverWait
 import selenium.webdriver.support.expected_conditions as EC
 import login_gmail_selenium.util.helper as Helper
@@ -27,29 +26,20 @@ class RapidApi:
         self.register()
         self.create_app()
         self.driver.quit()
+        self.delete_temp()
 
     def login(self):
-        self.driver.get("https://rapidapi.com/auth/login")
-        sleep(Constant.SHORT_WAIT)
         try:
-            if 'auth' in self.driver.current_url:
-                login_class = 'ant-btn-lg'
-                WebDriverWait(self.driver, Constant.LOADING_TIMEOUT).until(EC.visibility_of_element_located(
-                    (By.CLASS_NAME, login_class)))
-                self.driver.find_element(By.CLASS_NAME, login_class).click()
-                self.driver.get('https://accounts.google.com/'
-                                'o/oauth2/v2/auth/oauthchooseaccount?response_type=code&'
-                                'redirect_uri=https%3A%2F%2Frapidapi.com%2Fauthentication%2Fgoogle%2Fcallback&'
-                                'scope=email%20profile&state=%223%22&'
-                                'client_id=991879354912-toqgimi10brc511d062b8e8ru7hfa8go.apps.googleusercontent.com&'
-                                'service=lso&o2v=2&flowName=GeneralOAuthFlow')
-                choose_account = 'JDAKTe'
-                print(self.driver.find_element(By.CLASS_NAME, choose_account))
-                self.driver.find_element(By.CLASS_NAME, choose_account).click()
-                sleep(Constant.SHORT_WAIT)
-            else:
-                pass
-        except TimeoutException:
+            self.driver.get('https://accounts.google.com/'
+                            'o/oauth2/v2/auth/oauthchooseaccount?response_type=code&'
+                            'redirect_uri=https%3A%2F%2Frapidapi.com%2Fauthentication%2Fgoogle%2Fcallback&'
+                            'scope=email%20profile&state=%223%22&'
+                            'client_id=991879354912-toqgimi10brc511d062b8e8ru7hfa8go.apps.googleusercontent.com&'
+                            'service=lso&o2v=2&flowName=GeneralOAuthFlow')
+            choose_account = '.JDAKTe > div'
+            self.driver.find_element(By.CSS_SELECTOR, choose_account).click()
+            sleep(Constant.SHORT_WAIT)
+        except:
             pass
 
     def register(self):
@@ -65,7 +55,8 @@ class RapidApi:
         WebDriverWait(self.driver, Constant.LONG_LOADING_TIMEOUT).until(EC.visibility_of_element_located(
             (By.ID, 'appName')))
         xpath = '//*[@id="appName"]'
-        Helper.type_text(self.driver, xpath=xpath, text='myapp11')
+        app_name = random.choices(string.ascii_lowercase, k=8)
+        Helper.type_text(self.driver, xpath=xpath, text=app_name)
         key = self.get_key()
         self.write_file(key)
 
@@ -79,3 +70,12 @@ class RapidApi:
     def write_file(self, key):
         with open('Rapid_key.txt', 'a') as file:
             file.write(key + '\n')
+
+    def delete_temp(self):
+        for root, _, files in os.walk(Constant.TEMP_FOLDER):
+            for file in files:
+                file_path = os.path.join(root, file)
+                try:
+                    os.remove(file_path)
+                except:
+                    pass
