@@ -72,9 +72,12 @@ class RapidApi:
         f = open("accounts.txt", "r")
         for email in f:
             email = email.split(':')
-            profile = ChromeProfile(email[0], email[1], email[2])
-            self.driver = profile.retrieve_driver()
-            profile.start()
+            try:
+                profile = ChromeProfile(email[0], email[1], email[2])
+                self.driver = profile.retrieve_driver()
+                profile.start()
+            except:
+                continue
             self.login()
             self.register()
             self.create_app(email[0])
