@@ -5,7 +5,7 @@ import time
 
 if __name__ == '__main__':
     start_time = time.time()
-    a = RapidApi('ketqua')
+    a = RapidApi()
     a.generator()
 
     print("--- %s seconds ---" % (time.time() - start_time))
