@@ -10,3 +10,8 @@ def delete_temp():
                 os.remove(file_path)
             except (Exception, ValueError):
                 pass
+
+
+def write_file(file, content, email):
+    with open(file, 'a') as file:
+        file.write(email + ':' + content + '\n')
