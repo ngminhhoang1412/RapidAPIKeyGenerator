@@ -70,6 +70,7 @@ class RapidApi:
                 self.driver = profile.retrieve_driver()
                 profile.start()
             except (Exception, ValueError):
+                self.driver.quit()
                 continue
             self.login()
             self.register()
