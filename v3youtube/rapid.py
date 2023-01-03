@@ -50,7 +50,7 @@ class RapidApi:
             Help_Rapid.write_file('rapid_key.txt', content=key, email=email)
         except (Exception, ValueError):
             self.error = 'login_google_fail'
-            Help_Rapid.write_file(file='error_email.txt', content=self.error, email=email[0])
+            Help_Rapid.write_file(file='error_email.txt', content=self.error, email=email)
             self.error = None
             pass
 
