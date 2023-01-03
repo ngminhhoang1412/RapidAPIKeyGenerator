@@ -5,7 +5,7 @@ from login_gmail_selenium.util.profile import ChromeProfile
 from selenium.webdriver.support.wait import WebDriverWait
 import selenium.webdriver.support.expected_conditions as EC
 import login_gmail_selenium.util.helper as Helper
-import v3youtube.helper as Help_Rapid
+import v3youtube.helper as help_rapid
 import common.constants as Constant
 from selenium.webdriver.common.by import By
 
@@ -47,12 +47,11 @@ class RapidApi:
             app_name = random.choices(string.ascii_lowercase, k=8)
             Helper.type_text(self.driver, xpath=xpath, text=app_name)
             key = self.get_key()
-            Help_Rapid.write_file('rapid_key.txt', content=key, email=email)
+            help_rapid.write_file('rapid_key.txt', content=key, email=email)
         except (Exception, ValueError):
             self.error = 'login_google_fail'
-            Help_Rapid.write_file(file='error_email.txt', content=self.error, email=email)
+            help_rapid.write_file(file='error_email.txt', content=self.error, email=email)
             self.error = None
-            pass
 
     def get_key(self):
         show_key = "td > span > span.ant-input-suffix"
@@ -61,7 +60,7 @@ class RapidApi:
         x_rapidapi_key = self.driver.find_element(By.CSS_SELECTOR, key_input)
         return x_rapidapi_key.get_attribute('value')
 
-    def generator(self):
+    def generate_key(self):
         f = open("accounts.txt", "r")
         for email in f:
             email = email.split(':')
@@ -70,10 +69,9 @@ class RapidApi:
                 self.driver = profile.retrieve_driver()
                 profile.start()
             except (Exception, ValueError):
-                self.driver.quit()
                 continue
             self.login()
             self.register()
             self.create_app(email[0])
             self.driver.quit()
-            Help_Rapid.delete_temp()
+            help_rapid.delete_temp()
