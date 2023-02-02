@@ -13,10 +13,11 @@ from common.log import log_error
 
 class RapidApi:
 
-    def __init__(self, position):
+    def __init__(self, position, services):
         self.driver = None
         self.error = None
         self.position = position
+        self.services = services
 
     def login(self):
         try:
@@ -33,12 +34,12 @@ class RapidApi:
             log_error(err)
 
     def register(self):
-        try:
-            self.driver.get("https://rapidapi.com/ytdlfree/api/youtube-v31/pricing")
-            selector = '#sub_btn_cnt_billingplan_bf747870-ad40-4487-b28a-2f3906f96931 > div > button > div'
-            self.driver.find_element(By.CSS_SELECTOR, selector).click()
-        except (Exception, ValueError) as err:
-            log_error(err)
+        for service in self.services:
+            try:
+                self.driver.get(service)
+                self.driver.execute_script("document.getElementsByClassName('primary')[1].click()")
+            except (Exception, ValueError) as err:
+                log_error(err)
 
     def create_app(self, email):
         try:
