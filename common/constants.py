@@ -47,9 +47,11 @@ CWD = resource_path("")
 TEMP_FOLDER = resource_path("temp")
 os.makedirs(TEMP_FOLDER, exist_ok=True)
 LOG_FILE = os.path.join(TEMP_FOLDER, 'output.log')
+FALSE_EMAIL_FILE = os.path.join(TEMP_FOLDER, 'false_email.log')
 PROFILE_FOLDER = os.path.join(TEMP_FOLDER, 'profiles')
 PATCHED_DRIVER = os.path.join(TEMP_FOLDER, 'chromedriver.exe')
-
+gmail_file_name = 'accounts.txt'
+gmail_list = []
 
 # NOTE: Global variables
 

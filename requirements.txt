@@ -1,1 +1,3 @@
 login_gmail_selenium
+python-dotenv~=0.21.0
+selenium~=4.7.2

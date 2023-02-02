@@ -8,13 +8,15 @@ import login_gmail_selenium.util.helper as Helper
 import v3youtube.helper as help_rapid
 import common.constants as Constant
 from selenium.webdriver.common.by import By
+from common.log import log_error
 
 
 class RapidApi:
 
-    def __init__(self):
+    def __init__(self, position):
         self.driver = None
         self.error = None
+        self.position = position
 
     def login(self):
         try:
@@ -27,16 +29,16 @@ class RapidApi:
             choose_account = '.JDAKTe > div'
             self.driver.find_element(By.CSS_SELECTOR, choose_account).click()
             sleep(Constant.SHORT_WAIT)
-        except (Exception, ValueError):
-            pass
+        except (Exception, ValueError) as err:
+            log_error(err)
 
     def register(self):
         try:
             self.driver.get("https://rapidapi.com/ytdlfree/api/youtube-v31/pricing")
             selector = '#sub_btn_cnt_billingplan_bf747870-ad40-4487-b28a-2f3906f96931 > div > button > div'
             self.driver.find_element(By.CSS_SELECTOR, selector).click()
-        except (Exception, ValueError):
-            pass
+        except (Exception, ValueError) as err:
+            log_error(err)
 
     def create_app(self, email):
         try:
@@ -48,7 +50,8 @@ class RapidApi:
             Helper.type_text(self.driver, xpath=xpath, text=app_name)
             key = self.get_key()
             help_rapid.write_file('rapid_key.txt', content=key, email=email)
-        except (Exception, ValueError):
+        except (Exception, ValueError) as err:
+            log_error(err)
             self.error = 'login_google_fail'
             help_rapid.write_file(file='error_email.txt', content=self.error, email=email)
             self.error = None
@@ -61,17 +64,15 @@ class RapidApi:
         return x_rapidapi_key.get_attribute('value')
 
     def generate_key(self):
-        f = open("accounts.txt", "r")
-        for email in f:
-            email = email.split(':')
-            try:
-                profile = ChromeProfile(email[0], email[1], email[2])
-                self.driver = profile.retrieve_driver()
-                profile.start()
-            except (Exception, ValueError):
-                continue
-            self.login()
-            self.register()
-            self.create_app(email[0])
-            self.driver.quit()
-            help_rapid.delete_temp()
+        email = Constant.gmail_list[self.position]
+        try:
+            profile = ChromeProfile(email[0], email[1], email[2])
+            self.driver = profile.retrieve_driver()
+            profile.start()
+        except Exception as err:
+            log_error(err)
+        self.login()
+        self.register()
+        self.create_app(email[0])
+        self.driver.quit()
+        help_rapid.delete_temp()
