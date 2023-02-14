@@ -1,7 +1,7 @@
+import os
 from time import sleep
 import random
 import string
-from login_gmail_selenium.util.profile import ChromeProfile
 from selenium.webdriver.support.wait import WebDriverWait
 import selenium.webdriver.support.expected_conditions as EC
 import login_gmail_selenium.util.helper as Helper
@@ -13,10 +13,11 @@ from common.log import log_error
 
 class RapidApi:
 
-    def __init__(self, position, services):
-        self.driver = None
+    def __init__(self, services, driver, email):
+        self.driver = driver
         self.error = None
-        self.position = position
+        self.proxy = None
+        self.gmail = email
         self.services = services
 
     def login(self):
@@ -65,15 +66,8 @@ class RapidApi:
         return x_rapidapi_key.get_attribute('value')
 
     def generate_key(self):
-        email = Constant.gmail_list[self.position]
-        try:
-            profile = ChromeProfile(email[0], email[1], email[2])
-            self.driver = profile.retrieve_driver()
-            profile.start()
-        except Exception as err:
-            log_error(err)
         self.login()
         self.register()
-        self.create_app(email[0])
+        self.create_app(self.gmail)
         self.driver.quit()
         help_rapid.delete_temp()

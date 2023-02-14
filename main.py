@@ -1,8 +1,7 @@
 import os
-import sys
 from random import shuffle
 
-from v3youtube.rapid import RapidApi
+from v3youtube.flow import Flow
 import common.constants as Constant
 import time
 from concurrent.futures import ThreadPoolExecutor, wait
@@ -11,58 +10,48 @@ from common.log import setup_logging
 setup_logging()
 
 services = ["https://rapidapi.com/ytdlfree/api/youtube-v31/pricing",
-                "https://rapidapi.com/ashutosh05/api/aiov-download-youtube-videos/pricing"]
+            "https://rapidapi.com/ashutosh05/api/aiov-download-youtube-videos/pricing"]
 
 
 def handle_rapid(position):
-    rapid = RapidApi(position, services)
-    rapid.generate_key()
+    flow = Flow(position=position, services=services)
+    flow.generate_rapid_key()
 
 
-def get_gmail_list():
-    gmail_filename = Constant.gmail_file_name
-    gmails = []
-
-    if not os.path.isfile(gmail_filename) and gmail_filename[-4:] != '.txt':
-        gmail_filename = f'{gmail_filename}.txt'
-
-    try:
-        with open(gmail_filename, encoding="utf-8") as fh:
-            loaded = [x.strip() for x in fh if x.strip() != '']
-    except Exception:
-        sys.exit()
+def get_resource():
+    resources = []
+    path = Constant.RESOURCE_FILE
+    if not os.path.isfile(path):
+        raise ValueError('Resource file is required')
+    with open(path, encoding="utf-8") as f:
+        loaded = [x.strip() for x in f if x.strip() != '']
 
     for lines in loaded:
-        if lines.count(':') == 2:
+        if Constant.ERROR_MARK not in lines:
             split = lines.split(':')
             username = split[0]
             password = split[1]
             backup = split[2]
-            gmails.append([
-                username,
-                password,
-                backup
-            ])
-        elif lines.count(':') == 1:
-            split = lines.split(':')
-            username = split[0]
-            password = split[1]
-            gmails.append([
-                username,
-                password,
-                "empty"
-            ])
+            p = f"{split[5]}:{split[6]}@{split[3]}:{split[4]}"
+            resources.append({
+                "proxy": p,
+                "email": [
+                    username,
+                    password,
+                    backup
+                ]
+            })
 
-    gmails = list(filter(None, gmails))
-    shuffle(gmails)
-    return gmails
+    resources = list(filter(None, resources))
+    shuffle(resources)
+    return resources
 
 
 def main():
-    Constant.gmail_list = get_gmail_list()
-    num_email = len(Constant.gmail_list)
+    Constant.resources = get_resource()
+    num_email = len(Constant.resources)
     pool_number = list(range(num_email))
-    with ThreadPoolExecutor(max_workers=1) as executor:
+    with ThreadPoolExecutor(max_workers=2) as executor:
         futures = [executor.submit(handle_rapid, position) for position in pool_number]
         wait(futures)
 

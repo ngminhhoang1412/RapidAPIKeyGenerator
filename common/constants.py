@@ -43,15 +43,21 @@ def resource_path(relative_path):
 
 # NOTE: Configuration
 CWD = resource_path("")
-
+CONFIG_FOLDER = resource_path("config")
 TEMP_FOLDER = resource_path("temp")
 os.makedirs(TEMP_FOLDER, exist_ok=True)
 LOG_FILE = os.path.join(TEMP_FOLDER, 'output.log')
 FALSE_EMAIL_FILE = os.path.join(TEMP_FOLDER, 'false_email.log')
 PROFILE_FOLDER = os.path.join(TEMP_FOLDER, 'profiles')
 PATCHED_DRIVER = os.path.join(TEMP_FOLDER, 'chromedriver.exe')
+RESOURCE_FILE = os.path.join(CONFIG_FOLDER, 'resources.txt')
 gmail_file_name = 'accounts.txt'
 gmail_list = []
+ERROR_MARK = '[ERR]'
+resources = []
+proxy_type = None
+osname = None
+checked = {}
 
 # NOTE: Global variables
 
