@@ -2,31 +2,23 @@ import os
 from time import sleep
 import random
 import string
-from login_gmail_selenium.util.profile import ChromeProfile
 from selenium.webdriver.support.wait import WebDriverWait
 import selenium.webdriver.support.expected_conditions as EC
 import login_gmail_selenium.util.helper as Helper
-
+import v3youtube.helper as help_rapid
 import common.constants as Constant
 from selenium.webdriver.common.by import By
+from common.log import log_error
 
 
 class RapidApi:
 
-    def __init__(self, account):
-        email = account
-        email = email.split(':')
-        profile = ChromeProfile(email[0], email[1], email[2])
-        self.driver = profile.retrieve_driver()
-        try:
-            profile.start()
-        except:
-            profile.start()
-        self.login()
-        self.register()
-        self.create_app()
-        self.driver.quit()
-        self.delete_temp()
+    def __init__(self, services, driver, email):
+        self.driver = driver
+        self.error = None
+        self.proxy = None
+        self.gmail = email
+        self.services = services
 
     def login(self):
         try:
@@ -39,26 +31,32 @@ class RapidApi:
             choose_account = '.JDAKTe > div'
             self.driver.find_element(By.CSS_SELECTOR, choose_account).click()
             sleep(Constant.SHORT_WAIT)
-        except:
-            pass
+        except (Exception, ValueError) as err:
+            log_error(err)
 
     def register(self):
-        try:
-            self.driver.get("https://rapidapi.com/ytdlfree/api/youtube-v31/pricing")
-            selector = '#sub_btn_cnt_billingplan_bf747870-ad40-4487-b28a-2f3906f96931 > div > button > div'
-            self.driver.find_element(By.CSS_SELECTOR, selector).click()
-        except:
-            pass
+        for service in self.services:
+            try:
+                self.driver.get(service)
+                self.driver.execute_script("document.getElementsByClassName('primary')[1].click()")
+            except (Exception, ValueError) as err:
+                log_error(err)
 
-    def create_app(self):
-        self.driver.get("https://rapidapi.com/developer/new")
-        WebDriverWait(self.driver, Constant.LONG_LOADING_TIMEOUT).until(EC.visibility_of_element_located(
-            (By.ID, 'appName')))
-        xpath = '//*[@id="appName"]'
-        app_name = random.choices(string.ascii_lowercase, k=8)
-        Helper.type_text(self.driver, xpath=xpath, text=app_name)
-        key = self.get_key()
-        self.write_file(key)
+    def create_app(self, email):
+        try:
+            self.driver.get("https://rapidapi.com/developer/new")
+            WebDriverWait(self.driver, Constant.LOADING_TIMEOUT).until(EC.visibility_of_element_located(
+                (By.ID, 'appName')))
+            xpath = '//*[@id="appName"]'
+            app_name = random.choices(string.ascii_lowercase, k=8)
+            Helper.type_text(self.driver, xpath=xpath, text=app_name)
+            key = self.get_key()
+            help_rapid.write_file('rapid_key.txt', content=key, email=email)
+        except (Exception, ValueError) as err:
+            log_error(err)
+            self.error = 'login_google_fail'
+            help_rapid.write_file(file='error_email.txt', content=self.error, email=email)
+            self.error = None
 
     def get_key(self):
         show_key = "td > span > span.ant-input-suffix"
@@ -67,15 +65,9 @@ class RapidApi:
         x_rapidapi_key = self.driver.find_element(By.CSS_SELECTOR, key_input)
         return x_rapidapi_key.get_attribute('value')
 
-    def write_file(self, key):
-        with open('Rapid_key.txt', 'a') as file:
-            file.write(key + '\n')
-
-    def delete_temp(self):
-        for root, _, files in os.walk(Constant.TEMP_FOLDER):
-            for file in files:
-                file_path = os.path.join(root, file)
-                try:
-                    os.remove(file_path)
-                except:
-                    pass
+    def generate_key(self):
+        self.login()
+        self.register()
+        self.create_app(self.gmail)
+        self.driver.quit()
+        help_rapid.delete_temp()
